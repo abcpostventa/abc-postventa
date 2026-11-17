@@ -91,7 +91,7 @@ async function recibo(c){
   if(busy)return;busy=true;const trigger=document.activeElement?.tagName==='BUTTON'?document.activeElement:null;if(trigger){lockButtons(true);loading(trigger,true,'Actualizando…')}
   // El comprobante es público: nunca leer ni enviar el PIN del administrador.
   let r;
-  try{r=await api({a:'pedido',c})}catch(e){V.textContent='Sin conexión. Vuelve a intentarlo.';busy=false;return}
+  try{r=await get({a:'pedido',c})}catch(e){V.textContent='Sin conexión. Vuelve a intentarlo.';busy=false;return}
   if(!r.ok){V.innerHTML='<div class="card">'+esc(r.msg||'Pedido no encontrado.')+'</div>';busy=false;return}
   const p=r.pedido,E=EST[p.estado]||['',''];
   V.innerHTML=`<div class="card" style="text-align:center"><h2>✅ Tu pedido está registrado</h2><p class="mu">Guarda tu código y QR para presentar al retirar.</p><div class="mu">Código de retiro</div><div class="code">${esc(p.c)}</div>
