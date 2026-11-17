@@ -99,7 +99,6 @@ async function recibo(c){
   <div class="card"><b>Productos</b>${p.items.map(i=>`<div class="row" style="margin-top:8px"><span>${i.q}× ${esc(i.n)}</span><span class="mu">${m(i.p*i.q)}</span></div>`).join('')}
   <hr><div class="row"><b>Total</b><b>${m(p.total)}</b></div></div>`+
   (p.estado==='pendiente'?`<div class="card">Deposita <b>${m(p.total)}</b> y avisa al organizador. Al confirmar tu pago, este código queda válido para retirar.</div>`:'')+
-  (adm?`<div class="card"><b>Organizador</b><div style="margin-top:8px">${acciones(p,'r')}</div></div><a class="btn gh" href="?admin">Panel del organizador</a>`:'')+
   `<button class="btn" id="download" onclick="descargar()">⬇ Guardar QR y código en mi teléfono</button><button class="btn gh" onclick="recibo('${p.c}')">Actualizar estado</button>`;
   currentReceipt=p;
   try{const q=qrcode(0,'L');q.addData(location.origin+location.pathname+'?c='+encodeURIComponent(p.c));q.make();$('qr').innerHTML=q.createImgTag(6,2)}catch(e){$('qr').textContent='No se pudo generar el QR. Conserva tu código.'}
