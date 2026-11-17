@@ -51,7 +51,7 @@ const m=n=>MONEDA+Number(n).toLocaleString('es');
 const ls={get:k=>{try{return localStorage.getItem(k)||''}catch(e){return ''}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
 // POST con texto plano: evita preflight CORS en Apps Script
 const api=async o=>(await fetch(API,{method:'POST',body:JSON.stringify(o)})).json();
-const get=async q=>(await fetch(API+'?'+new URLSearchParams(q))).json();
+const get=async q=>{const res=await fetch(API+'?'+new URLSearchParams(q),{redirect:'follow',cache:'no-store'});if(!res.ok)throw Error('HTTP '+res.status);return res.json()};
 const pin=()=>ls.get('pin');
 let busy=false;
 function loading(button,on,label='Procesando…'){
@@ -64,7 +64,7 @@ function lockButtons(on){document.querySelectorAll('button').forEach(b=>{if(on){
 /* ---------- CLIENTE: formulario ---------- */
 let cart={},menu=[];
 async function cliente(){
-  try{menu=(await get({a:'menu'})).menu}catch(e){V.textContent='No se pudo cargar el menú. Intenta de nuevo.';return}
+  try{const result=await get({a:'menu'});if(!result.ok||!Array.isArray(result.menu))throw Error(result.msg||'Menú no disponible');menu=result.menu}catch(e){V.innerHTML='<div class="card">No se pudo cargar el menú. Comprueba que la aplicación web de Apps Script esté publicada y permita acceso público. <button class="btn" onclick="cliente()">Reintentar</button></div>';return}
   V.innerHTML=`<div class="card"><h2>🛒 Realizar pedido</h2><p class="mu intro">Elige tus comidas, indica tu nombre y teléfono, y confirma el pedido. Al finalizar recibirás un código de retiro y un QR que podrás guardar en tu teléfono. No necesitas ingresar ningún código para ordenar.</p></div>`+
   `<div class="card"><label class="field-label" for="nm">Nombre</label><input id="nm" placeholder="Tu nombre" autocomplete="name" required><div class="field-gap"><label class="field-label" for="tl">Teléfono</label><input id="tl" type="tel" inputmode="tel" placeholder="Tu teléfono" autocomplete="tel" required></div></div>`+
   menu.map((p,i)=>`<div class="card row"><div><b>${esc(p.n)}</b><div class="mu">${m(p.p)}</div></div>
@@ -91,7 +91,7 @@ async function recibo(c){
   if(busy)return;busy=true;const trigger=document.activeElement?.tagName==='BUTTON'?document.activeElement:null;if(trigger){lockButtons(true);loading(trigger,true,'Actualizando…')}
   // El comprobante es público: nunca leer ni enviar el PIN del administrador.
   let r;
-  try{r=await get({a:'pedido',c})}catch(e){V.textContent='Sin conexión. Vuelve a intentarlo.';busy=false;return}
+  try{r=await get({a:'pedido',c})}catch(e){V.innerHTML='<div class="card">No se pudo consultar el pedido. Comprueba la conexión y el acceso público de Apps Script. <button class="btn" onclick="recibo('+JSON.stringify(c)+')">Reintentar</button></div>';busy=false;return}
   if(!r.ok){V.innerHTML='<div class="card">'+esc(r.msg||'Pedido no encontrado.')+'</div>';busy=false;return}
   const p=r.pedido,E=EST[p.estado]||['',''];
   V.innerHTML=`<div class="card" style="text-align:center"><h2>✅ Tu pedido está registrado</h2><p class="mu">Guarda tu código y QR para presentar al retirar.</p><div class="mu">Código de retiro</div><div class="code">${esc(p.c)}</div>
