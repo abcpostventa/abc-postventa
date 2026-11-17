@@ -72,7 +72,7 @@ const EST={pendiente:['Pendiente de pago',''],pagado:['Pagado ✅','ok'],entrega
 async function recibo(c){
   const adm=pin();let r;
   try{r=adm?await api({a:'ver',pin:adm,c}):await api({a:'pedido',c})}catch(e){V.textContent='Sin conexión.';return}
-  if(!r.ok){V.innerHTML='<div class="card">if(!r.ok){V.innerHTML='<div class="card">'+esc(r.msg||'Pedido no encontrado.')+'</div>';return}';return}
+  if(!r.ok){V.innerHTML='<div class="card">'+esc(r.msg||'Pedido no encontrado.')+'</div>';return}
   const p=r.pedido,E=EST[p.estado]||['',''];
   V.innerHTML=`<div class="card" style="text-align:center"><div class="mu">Código de retiro</div><div class="code">${esc(p.c)}</div>
   <div id="qr"></div><div><span class="tag ${E[1]}">${E[0]}</span></div>
